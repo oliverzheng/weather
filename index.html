@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Weather Bar</title>
+  <style>
+    body {
+      padding: 30px;
+    }
+    
+    #bar {
+      position: relative;
+      width: 100%;
+      height: 40px;
+      border: 1px solid black;
+    }
+
+    #arrow-container {
+      position: absolute;
+    }
+
+    #arrow {
+  width: 50px;
+  height: 50px;
+  background-color: rgb(88, 82, 204);
+  clip-path: polygon(0% 100%, 50% 0%, 100% 100%);
+    }
+    #avgtemp {
+      text-align: center;
+    }
+    #pics img {
+      position: absolute;
+      bottom: 0;
+    }
+    #pics {
+      position: relative;
+      height: 200px;
+    }
+  </style>
+</head>
+<body>
+  <div id="pics">
+    <img src="./sweater.jpg" width="20%" style="left: 0" />
+    <img src="./shirt.jpg" width="20%" style="left: 30%" />
+    <img src="./tshirt.jpg" width="20%" style="left: 60%" />
+  </div>
+  <div id="bar"></div>
+  <div id="arrow-container">
+    <div id="arrow"></div>
+    <div id="avgtemp"></div>
+  </div>
+
+  <script>
+    // Fetch weather data
+
+    function kelvinToFahrenheit(kelvin) {
+      return (kelvin - 273.15) * 9/5 + 32;
+    }
+
+    fetch('https://api.openweathermap.org/data/3.0/onecall?lat=47.550899&lon=-122.040141&appid=5a7f15b6b95c099b604fd40ca6b21752')
+  .then(response => response.json())
+  .then(data => {
+        // Look at it at 8am, so want the 9am to 4pm.
+        const hoursTemp = data.hourly.slice(1, 8).map(h => kelvinToFahrenheit(h.feels_like));
+        const avgTemp = Math.round(hoursTemp.reduce((acc, next) => acc + next, 0) / hoursTemp.length);
+
+document.getElementById('avgtemp').innerText = avgTemp;
+
+        // Calculate position for the arrow
+        const arrowPosition = ((avgTemp - 40) / (90 - 40));
+
+        // Set the position of the arrow
+        const arrow = document.getElementById('arrow');
+
+        const arrowContainer = document.getElementById('arrow-container');
+        arrowContainer.style.left = `${arrowPosition*100}%`;
+
+        // Render the segmented bar
+        const bar = document.getElementById('bar');
+        const segment1 = document.createElement('div');
+        segment1.innerText = '40'
+        segment1.style.width = '30%'; // Adjust the segment widths as desired
+        segment1.style.backgroundColor = 'green';
+        segment1.style.height = '100%';
+        segment1.style.float = 'left';
+        bar.appendChild(segment1);
+
+        const segment2 = document.createElement('div');
+        segment2.innerText = '55'
+        segment2.style.width = '20%';
+        segment2.style.backgroundColor = 'orange';
+        segment2.style.height = '100%';
+        segment2.style.float = 'left';
+        bar.appendChild(segment2);
+
+        const segment3 = document.createElement('div');
+        segment3.innerHTML = '<span style="float:right">90</span> 65';
+        segment3.style.width = '50%';
+        segment3.style.backgroundColor = 'red';
+        segment3.style.height = '100%';
+        segment3.style.float = 'left';
+        bar.appendChild(segment3);
+  })
+  .catch(error => {
+    console.log('Error fetching weather data:', error);
+  });
+  </script>
+</body>
+</html>
